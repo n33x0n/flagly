@@ -1,0 +1,16 @@
+{
+    "totalGames": 0,
+    "totalCorrect": 0,
+    "totalQuestions": 0,
+    "bestScores": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+    },
+    "gamesModes": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+    },
+    "recentGames": []
+}
