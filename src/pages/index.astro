@@ -1,0 +1,1013 @@
+---
+// Główna strona aplikacji Flagly
+import Layout from "../layouts/Layout.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout>
+	<div class="container">
+		<!-- Ekran startowy -->
+		<div id="start-screen" class="screen fade-in">
+			<div class="logo-container">
+				<h1>🏳️ Flagly</h1>
+				<p>Poznaj flagi wszystkich krajów świata!</p>
+			</div>
+
+			<div class="card">
+				<label class="input-label" for="player-name"
+					>Twoje imię lub pseudonim</label
+				>
+				<input
+					type="text"
+					id="player-name"
+					class="input"
+					placeholder="np. Jan"
+					maxlength="20"
+					autocomplete="off"
+				/>
+
+				<div class="difficulty-grid">
+					<button class="difficulty-btn easy" data-difficulty="easy">
+						<div class="difficulty-title">🟢 Łatwy</div>
+						<p class="difficulty-desc">
+							60 najbardziej znanych krajów
+						</p>
+					</button>
+
+					<button
+						class="difficulty-btn medium"
+						data-difficulty="medium"
+					>
+						<div class="difficulty-title">🟡 Średni</div>
+						<p class="difficulty-desc">
+							130 krajów, w tym mniej znane
+						</p>
+					</button>
+
+					<button class="difficulty-btn hard" data-difficulty="hard">
+						<div class="difficulty-title">🔴 Trudny</div>
+						<p class="difficulty-desc">
+							254 kraje i terytoria świata
+						</p>
+					</button>
+
+					<button
+						class="difficulty-btn survival"
+						data-difficulty="survival"
+						style="grid-column: 1 / -1;"
+					>
+						<div class="difficulty-title">🔥 Tryb Survival</div>
+						<p class="difficulty-desc">
+							254 kraje i terytoria, 3 życia i tabela statystyk,
+							która czeka na Twój najlepszy wynik!
+						</p>
+					</button>
+				</div>
+
+				<div
+					style="display: flex; gap: var(--space-md); margin-top: var(--space-lg);"
+				>
+					<button
+						id="show-stats-btn"
+						class="btn btn-secondary"
+						style="flex: 1; text-align: left; justify-content: flex-start; padding-left: var(--space-md);"
+					>
+						Moje statystyki
+					</button>
+					<button
+						id="show-global-stats-btn"
+						class="btn btn-secondary"
+						style="flex: 1; text-align: left; justify-content: flex-start; padding-left: var(--space-md);"
+					>
+						Statystyki ogólne
+					</button>
+				</div>
+
+				<div
+					id="global-counters"
+					style="margin-top: var(--space-xl); font-size: 0.75rem; color: var(--text-secondary); text-align: left; opacity: 0.7;"
+				>
+					<p style="margin-bottom: 4px;">
+						Liczba rozegranych gier na poziomie łatwym: <span
+							id="counter-easy">...</span
+						>
+					</p>
+					<p style="margin-bottom: 4px;">
+						Liczba rozegranych gier na poziomie średnim: <span
+							id="counter-medium">...</span
+						>
+					</p>
+					<p>
+						Liczba rozegranych gier na poziomie trudnym: <span
+							id="counter-hard">...</span
+						>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Ekran quizu -->
+		<div id="quiz-screen" class="screen" style="display: none;">
+			<div class="progress-container">
+				<div class="progress-text">
+					<span id="question-counter">Pytanie 1/30</span>
+					<div style="display: flex; gap: 10px;">
+						<span id="lives-counter" style="display: none;"
+							>❤️❤️❤️</span
+						>
+						<span id="score-counter">Wynik: 0</span>
+					</div>
+				</div>
+				<div class="progress-bar">
+					<div
+						id="progress-fill"
+						class="progress-fill"
+						style="width: 0%"
+					>
+					</div>
+				</div>
+			</div>
+
+			<div class="flag-container">
+				<img
+					id="flag-image"
+					class="flag-image"
+					src=""
+					alt="Flaga kraju do odgadnięcia"
+				/>
+			</div>
+
+			<div id="options-container" class="options-grid">
+				<!-- Opcje będą wstawiane przez JS -->
+			</div>
+
+			<button
+				id="quit-quiz-btn"
+				style="background: none; border: none; color: var(--text-secondary); width: 100%; margin-top: var(--space-lg); padding: var(--space-sm); font-size: 0.9rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;"
+				onmouseover="this.style.opacity='1'"
+				onmouseout="this.style.opacity='0.8'"
+			>
+				← Powrót do menu
+			</button>
+		</div>
+
+		<!-- Ekran podsumowania -->
+		<div id="summary-screen" class="screen" style="display: none;">
+			<div class="card">
+				<h2 style="text-align: center; margin-bottom: var(--space-xs);">
+					🎉 Koniec testu!
+				</h2>
+
+				<div class="summary-score" id="final-score">0/30</div>
+				<p class="summary-label" id="score-message">Świetny wynik!</p>
+				<p
+					id="online-status"
+					style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: var(--space-md); min-height: 1.2em; text-align: center;"
+				>
+				</p>
+
+				<div class="summary-stats">
+					<div class="stat-card">
+						<div class="stat-value" id="stat-percent">0%</div>
+						<div class="stat-label">Trafność</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="stat-time">0s</div>
+						<div class="stat-label">Czas</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="stat-best">0</div>
+						<div class="stat-label">Rekord</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="stat-games">0</div>
+						<div class="stat-label">Gry</div>
+					</div>
+				</div>
+
+				<div class="summary-actions">
+					<button
+						id="play-again-btn"
+						class="btn btn-primary"
+						style="width: 100%; margin-bottom: var(--space-sm);"
+					>
+						🔄 Zagraj ponownie
+					</button>
+					<button
+						id="back-to-menu-summary-btn"
+						class="btn btn-secondary"
+						style="width: 100%; margin-bottom: var(--space-sm);"
+					>
+						🏠 Powrót do menu
+					</button>
+					<button
+						id="change-difficulty-btn"
+						class="btn btn-secondary"
+						style="width: 100%;"
+					>
+						⚙️ Zmień poziom
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Ekran statystyk gracza -->
+		<div id="stats-screen" class="screen" style="display: none;">
+			<div class="card">
+				<div class="stats-header">
+					<h2>📊 Twoje statystyki</h2>
+					<button id="close-stats-btn" class="btn-icon">✕</button>
+				</div>
+
+				<div
+					id="stats-summary"
+					class="summary-stats"
+					style="margin-bottom: var(--space-lg);"
+				>
+					<div class="stat-card">
+						<div class="stat-value" id="total-games">0</div>
+						<div class="stat-label">Gry</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="total-best">0</div>
+						<div class="stat-label">Rekord</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="total-correct">0</div>
+						<div class="stat-label">Trafień</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-value" id="total-accuracy">0%</div>
+						<div class="stat-label">Średnia</div>
+					</div>
+				</div>
+
+				<h3
+					style="font-size: 0.9rem; margin-bottom: var(--space-sm); color: var(--text-secondary);"
+				>
+					Historia gier
+				</h3>
+				<div id="stats-list" class="stats-list">
+					<!-- Lista gier będzie wstawiana przez JS -->
+				</div>
+
+				<button
+					id="back-to-menu-btn"
+					class="btn btn-primary"
+					style="width: 100%; margin-top: var(--space-lg);"
+				>
+					← Powrót do menu
+				</button>
+			</div>
+		</div>
+
+		<!-- Ekran statystyk ogólnych -->
+		<div id="global-stats-screen" class="screen" style="display: none;">
+			<div class="card">
+				<div class="stats-header">
+					<h2>🌍 Statystyki ogólne</h2>
+					<button id="close-global-stats-btn" class="btn-icon"
+						>✕</button
+					>
+				</div>
+
+				<div
+					id="global-stats-error"
+					style="display: none; color: var(--color-error); text-align: center; margin-bottom: var(--space-md);"
+				>
+					Nie udało się pobrać statystyk globalnych.
+				</div>
+
+				<div id="global-stats-content">
+					<!-- Rząd 1: Liczba gier -->
+					<div class="stats-row stats-row-4">
+						<div class="stat-card">
+							<div class="stat-value" id="global-games">0</div>
+							<div class="stat-label">Gry (Łącznie)</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-games-easy">
+								0
+							</div>
+							<div class="stat-label">Gry (Easy)</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-games-medium">
+								0
+							</div>
+							<div class="stat-label">Gry (Medium)</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-games-hard">
+								0
+							</div>
+							<div class="stat-label">Gry (Hard)</div>
+						</div>
+					</div>
+
+					<!-- Rząd 2: Rekordy -->
+					<div class="stats-row stats-row-4">
+						<div class="stat-card">
+							<div class="stat-value" id="global-best-all">0</div>
+							<div class="stat-label">Rekord Survival</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-best-easy">
+								0
+							</div>
+							<div class="stat-label">Rekord (Easy)</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-best-medium">
+								0
+							</div>
+							<div class="stat-label">Rekord (Medium)</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-best-hard">
+								0
+							</div>
+							<div class="stat-label">Rekord (Hard)</div>
+						</div>
+					</div>
+
+					<!-- Rząd 3: Trafność -->
+					<div class="stats-row stats-row-3">
+						<div class="stat-card">
+							<div class="stat-value" id="global-total-correct">
+								0
+							</div>
+							<div class="stat-label">Poprawnych</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-total-incorrect">
+								0
+							</div>
+							<div class="stat-label">Błędnych</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-value" id="global-accuracy">
+								0%
+							</div>
+							<div class="stat-label">Średnia</div>
+						</div>
+					</div>
+
+					<h3
+						style="font-size: 0.9rem; margin-bottom: var(--space-sm); color: var(--text-secondary);"
+					>
+						Ostatnie gry graczy
+					</h3>
+					<div id="global-stats-list" class="stats-list">
+						<!-- Lista gier globalnych -->
+					</div>
+				</div>
+
+				<button
+					id="back-to-menu-global-btn"
+					class="btn btn-primary"
+					style="width: 100%; margin-top: var(--space-lg);"
+				>
+					← Powrót do menu
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<Footer />
+</Layout>
+
+<style>
+	.screen {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.logo-container {
+		text-align: center;
+		padding: var(--space-xl) 0 var(--space-lg);
+	}
+
+	.logo-container h1 {
+		margin-bottom: var(--space-xs);
+	}
+
+	.logo-container p {
+		font-size: 1rem;
+	}
+
+	.input-label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--text-secondary);
+		margin-bottom: var(--space-sm);
+	}
+
+	.options-grid {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+	}
+
+	.summary-actions {
+		margin-top: var(--space-md);
+	}
+
+	/* Global Stats Grid */
+	.stats-row {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		margin-bottom: var(--space-sm);
+	}
+
+	@media (min-width: 768px) {
+		.stats-row {
+			display: grid;
+			gap: var(--space-sm);
+		}
+		.stats-row-4 {
+			grid-template-columns: repeat(4, 1fr);
+		}
+		.stats-row-3 {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+</style>
+
+<script>
+	import {
+		getCountriesForQuiz,
+		getRandomCountries,
+		generateOptions,
+		getFlagSvgUrl,
+		type Difficulty,
+		type Country,
+	} from "../data/countries";
+	import {
+		saveGameResult,
+		getPlayerStats,
+		getLastPlayer,
+	} from "../scripts/storage";
+
+	// Stan gry
+	let currentDifficulty: Difficulty = "easy";
+	let playerName = "";
+	let questions: Country[] = [];
+	let currentQuestionIndex = 0;
+	let score = 0;
+	let lives = 3;
+	let startTime = 0;
+	let isAnswered = false;
+
+	// Elementy DOM
+	const startScreen = document.getElementById("start-screen")!;
+	const quizScreen = document.getElementById("quiz-screen")!;
+	const summaryScreen = document.getElementById("summary-screen")!;
+	const statsScreen = document.getElementById("stats-screen")!;
+	const globalStatsScreen = document.getElementById("global-stats-screen")!;
+	const playerNameInput = document.getElementById(
+		"player-name",
+	) as HTMLInputElement;
+	const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+	const questionCounter = document.getElementById("question-counter")!;
+	const livesCounter = document.getElementById("lives-counter")!;
+	const scoreCounter = document.getElementById("score-counter")!;
+	const progressFill = document.getElementById("progress-fill")!;
+	const flagImage = document.getElementById("flag-image") as HTMLImageElement;
+	const optionsContainer = document.getElementById("options-container")!;
+	const playAgainBtn = document.getElementById("play-again-btn")!;
+	const changeDifficultyBtn = document.getElementById(
+		"change-difficulty-btn",
+	)!;
+	const backToMenuSummaryBtn = document.getElementById(
+		"back-to-menu-summary-btn",
+	)!;
+	const showStatsBtn = document.getElementById("show-stats-btn")!;
+	const showGlobalStatsBtn = document.getElementById(
+		"show-global-stats-btn",
+	)!;
+	const closeStatsBtn = document.getElementById("close-stats-btn")!;
+	const closeGlobalStatsBtn = document.getElementById(
+		"close-global-stats-btn",
+	)!;
+	const backToMenuBtn = document.getElementById("back-to-menu-btn")!;
+	const backToMenuGlobalBtn = document.getElementById(
+		"back-to-menu-global-btn",
+	)!;
+
+	// Add listener for back to menu summary button
+	if (backToMenuSummaryBtn) {
+		backToMenuSummaryBtn.addEventListener("click", () => {
+			showScreen("start");
+		});
+	}
+
+	const quitQuizBtn = document.getElementById("quit-quiz-btn")!;
+
+	// API URL - wykryj czy jesteśmy w podkatalogu czy w root
+	const getApiUrl = () => {
+		const path = window.location.pathname;
+		const basePath = path.includes("/flagly/") ? "/flagly" : "";
+		return `${basePath}/api/stats.php`;
+	};
+
+	// Funkcja do aktualizacji globalnych statystyk
+	async function updateGlobalStats(
+		score: number,
+		total: number,
+		difficulty: string,
+		playerName: string,
+	) {
+		try {
+			const response = await fetch(getApiUrl(), {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					score,
+					total,
+					difficulty,
+					playerName,
+				}),
+			});
+
+			if (!response.ok) {
+				const data = await response.json().catch(() => ({}));
+				return { success: false, error: data.error || "Server Error" };
+			}
+			return { success: true };
+		} catch (e) {
+			console.error("Failed to update global stats", e);
+			return { success: false, error: "Network Error" };
+		}
+	}
+
+	// Funkcja do pobierania globalnych statystyk
+	async function fetchGlobalStats() {
+		try {
+			// Reset UI
+			document.getElementById("global-stats-content")!.style.opacity =
+				"0.5";
+			document.getElementById("global-stats-error")!.style.display =
+				"none";
+
+			const response = await fetch(getApiUrl());
+			if (!response.ok) throw new Error("Network response was not ok");
+
+			const stats = await response.json();
+
+			// Rząd 1: Gry
+			document.getElementById("global-games")!.textContent = (
+				stats.totalGames || 0
+			).toLocaleString();
+			document.getElementById("global-games-easy")!.textContent = (
+				stats.gamesModes?.easy || 0
+			).toLocaleString();
+			document.getElementById("global-games-medium")!.textContent = (
+				stats.gamesModes?.medium || 0
+			).toLocaleString();
+			document.getElementById("global-games-hard")!.textContent = (
+				stats.gamesModes?.hard || 0
+			).toLocaleString();
+
+			// Rząd 2: Rekordy
+			const bestEasy = stats.bestScores?.easy || 0;
+			const bestMedium = stats.bestScores?.medium || 0;
+			const bestHard = stats.bestScores?.hard || 0;
+			const bestSurvival = stats.bestScores?.survival || 0;
+			// const bestAll = Math.max(bestEasy, bestMedium, bestHard); // Wcześniejsza logika
+
+			// Teraz pierwszy kafelek to Rekord Survival
+			document.getElementById("global-best-all")!.textContent =
+				bestSurvival.toString();
+			document.getElementById("global-best-easy")!.textContent =
+				bestEasy.toString();
+			document.getElementById("global-best-medium")!.textContent =
+				bestMedium.toString();
+			document.getElementById("global-best-hard")!.textContent =
+				bestHard.toString();
+
+			// Rząd 3: Trafność
+			document.getElementById("global-total-correct")!.textContent = (
+				stats.totalCorrect || 0
+			).toLocaleString();
+
+			const totalQuestions = stats.totalQuestions || 0;
+			const totalIncorrect = totalQuestions - (stats.totalCorrect || 0);
+			document.getElementById("global-total-incorrect")!.textContent =
+				totalIncorrect.toLocaleString();
+
+			const accuracy =
+				totalQuestions > 0
+					? Math.round(
+							((stats.totalCorrect || 0) / totalQuestions) * 100,
+						)
+					: 0;
+			document.getElementById("global-accuracy")!.textContent =
+				`${accuracy}%`;
+
+			// Render lista ostatnich gier
+			const globalStatsList =
+				document.getElementById("global-stats-list")!;
+			if (stats.recentGames && stats.recentGames.length > 0) {
+				globalStatsList.innerHTML = stats.recentGames
+					.map((game: any) => {
+						const date = new Date(game.date);
+						const dateStr = date.toLocaleDateString("pl-PL", {
+							day: "numeric",
+							month: "short",
+							hour: "2-digit",
+							minute: "2-digit",
+						});
+						const difficultyIcons: Record<string, string> = {
+							easy: "🟢",
+							medium: "🟡",
+							hard: "🔴",
+							survival: "🔥",
+						};
+						const icon = difficultyIcons[game.difficulty] || "⚪";
+
+						return `
+						<div class="stats-item">
+							<div class="stats-item-info">
+								<span style="font-weight: 700; color: var(--text-primary); margin-right: 0.5rem;">${game.playerName}</span>
+								<span class="stats-item-date" style="font-size: 0.75rem;">${dateStr}</span>
+							</div>
+							<div style="display: flex; align-items: center; gap: 0.5rem;">
+								<span style="font-size: 0.8rem;">${icon}</span>
+								<span class="stats-item-score">${game.score}/${game.total}</span>
+							</div>
+						</div>
+					`;
+					})
+					.join("");
+			} else {
+				globalStatsList.innerHTML =
+					'<div class="stats-empty">Brak historii gier. Zagraj jako pierwszy!</div>';
+			}
+
+			document.getElementById("global-stats-content")!.style.opacity =
+				"1";
+		} catch (e) {
+			console.error("Failed to fetch global stats", e);
+			document.getElementById("global-stats-content")!.style.opacity =
+				"1";
+			document.getElementById("global-stats-error")!.style.display =
+				"block";
+		}
+	}
+
+	// Funkcja do pobierania liczników gier
+	async function updateGameCounters() {
+		try {
+			const response = await fetch(getApiUrl());
+			if (response.ok) {
+				const data = await response.json();
+				if (data.gamesModes) {
+					document.getElementById("counter-easy")!.textContent =
+						data.gamesModes.easy || "0";
+					document.getElementById("counter-medium")!.textContent =
+						data.gamesModes.medium || "0";
+					document.getElementById("counter-hard")!.textContent =
+						data.gamesModes.hard || "0";
+				}
+			}
+		} catch (e) {
+			console.error("Failed to fetch game counters", e);
+		}
+	}
+
+	// Pobierz liczniki na starcie
+	updateGameCounters();
+
+	// Załaduj ostatniego gracza
+	const lastPlayer = getLastPlayer();
+	if (lastPlayer) {
+		playerNameInput.value = lastPlayer;
+	}
+
+	// Obsługa wyboru trudności
+	difficultyButtons.forEach((btn) => {
+		btn.addEventListener("click", () => {
+			const name = playerNameInput.value.trim();
+			if (!name) {
+				playerNameInput.classList.add("error");
+				playerNameInput.focus();
+				// Remove error class after animation
+				setTimeout(
+					() => playerNameInput.classList.remove("error"),
+					500,
+				);
+				return;
+			}
+			playerNameInput.classList.remove("error");
+			playerName = name;
+			currentDifficulty = (btn as HTMLElement).dataset
+				.difficulty as Difficulty;
+			startQuiz();
+		});
+	});
+
+	// Remove error on input
+	playerNameInput.addEventListener("input", () => {
+		if (playerNameInput.value.trim()) {
+			playerNameInput.classList.remove("error");
+		}
+	});
+
+	// Rozpocznij quiz
+	function startQuiz() {
+		const pool = getCountriesForQuiz(currentDifficulty);
+		// Survival ma wszystkie, randomizowane. Inne tryby też randomizowane ale limit 30
+		if (currentDifficulty === "survival") {
+			questions = getRandomCountries(pool, pool.length); // Wszystkie
+			lives = 3;
+			livesCounter.style.display = "inline";
+			updateLivesDisplay();
+		} else {
+			questions = getRandomCountries(pool, 30);
+			livesCounter.style.display = "none";
+		}
+
+		currentQuestionIndex = 0;
+		score = 0;
+		startTime = Date.now();
+
+		showScreen("quiz");
+		showQuestion();
+	}
+
+	function updateLivesDisplay() {
+		let hearts = "";
+		for (let i = 0; i < lives; i++) hearts += "❤️";
+		livesCounter.textContent = hearts;
+	}
+
+	// Wyświetl pytanie
+	function showQuestion() {
+		if (currentQuestionIndex >= questions.length) {
+			endQuiz();
+			return;
+		}
+
+		isAnswered = false;
+		const currentCountry = questions[currentQuestionIndex];
+		const pool = getCountriesForQuiz(currentDifficulty);
+		const options = generateOptions(currentCountry, pool);
+
+		// Aktualizuj UI
+		// Aktualizuj UI
+		if (currentDifficulty === "survival") {
+			questionCounter.textContent = `Pytanie ${score + 1}`; // W survivalu numer pytania to de facto wynik + 1 lub currentQuestionIndex + 1
+			// Lepiej: Pytanie 1... N. Bez limitu /30
+			questionCounter.textContent = `Pytanie ${currentQuestionIndex + 1}`;
+			progressFill.style.width = `100%`; // Pasek zawsze pełny lub np. malejący czas? Zostawmy pełny.
+		} else {
+			questionCounter.textContent = `Pytanie ${currentQuestionIndex + 1}/30`;
+			progressFill.style.width = `${(currentQuestionIndex / 30) * 100}%`;
+		}
+
+		scoreCounter.textContent = `Wynik: ${score}`;
+
+		// Załaduj flagę
+		flagImage.src = getFlagSvgUrl(currentCountry.code);
+		flagImage.alt = `Flaga kraju do odgadnięcia`;
+
+		// Wygeneruj przyciski odpowiedzi
+		optionsContainer.innerHTML = options
+			.map(
+				(option) => `
+      <button class="btn-answer" data-code="${option.code}">
+        ${option.name}
+      </button>
+    `,
+			)
+			.join("");
+
+		// Dodaj event listenery
+		optionsContainer.querySelectorAll(".btn-answer").forEach((btn) => {
+			btn.addEventListener("click", () =>
+				handleAnswer(btn as HTMLElement, currentCountry.code),
+			);
+		});
+	}
+
+	// Obsługa odpowiedzi
+	function handleAnswer(button: HTMLElement, correctCode: string) {
+		if (isAnswered) return;
+		isAnswered = true;
+
+		const selectedCode = button.dataset.code;
+		const isCorrect = selectedCode === correctCode;
+
+		if (isCorrect) {
+			score++;
+			button.classList.add("correct");
+		} else {
+			button.classList.add("incorrect");
+			// Pokaż poprawną odpowiedź
+			optionsContainer.querySelectorAll(".btn-answer").forEach((btn) => {
+				if ((btn as HTMLElement).dataset.code === correctCode) {
+					btn.classList.add("correct");
+				}
+			});
+		}
+
+		if (currentDifficulty === "survival" && !isCorrect) {
+			lives--;
+			updateLivesDisplay();
+			if (lives <= 0) {
+				// Game Over for survival
+				// Czekamy chwilę żeby zobaczył złą odpowiedź
+				setTimeout(() => {
+					endQuiz();
+				}, 1000);
+				return;
+			}
+		}
+
+		// Zablokuj wszystkie przyciski
+		optionsContainer.querySelectorAll(".btn-answer").forEach((btn) => {
+			(btn as HTMLButtonElement).disabled = true;
+		});
+
+		// Przejdź do następnego pytania po 1 sekundzie
+		setTimeout(() => {
+			currentQuestionIndex++;
+			showQuestion();
+		}, 1000);
+	}
+
+	// Zakończ quiz
+	function endQuiz() {
+		const endTime = Date.now();
+		const timeSeconds = Math.round((endTime - startTime) / 1000);
+
+		// Zapisz wynik lokalnie
+		saveGameResult(playerName, {
+			score,
+			total: currentDifficulty === "survival" ? score : 30, // W survivalu "total" to po prostu wynik dla uproszczenia wyświetlania "X/X"? Nie, score to score.
+			difficulty: currentDifficulty,
+			timeSeconds,
+		});
+
+		// Wyślij wynik do globalnych statystyk
+		const onlineStatus = document.getElementById("online-status");
+		if (onlineStatus) {
+			onlineStatus.textContent = "Wysyłanie wyniku do rankingu...";
+			onlineStatus.style.color = "var(--text-secondary)";
+
+			updateGlobalStats(
+				score,
+				currentDifficulty === "survival" ? score : 30,
+				currentDifficulty,
+				playerName,
+			).then((result) => {
+				if (result.success) {
+					onlineStatus.textContent =
+						"Wynik zapisany w rankingu globalnym 🌍";
+					onlineStatus.style.color = "var(--color-success)";
+				} else {
+					onlineStatus.textContent = `Błąd rankingu: ${result.error}`;
+					onlineStatus.style.color = "var(--color-error)";
+				}
+			});
+		}
+
+		// Pobierz statystyki
+		const stats = getPlayerStats(playerName);
+
+		// Aktualizuj UI podsumowania
+		let percent = 0;
+		if (currentDifficulty === "survival") {
+			document.getElementById("final-score")!.textContent = `${score}`;
+			document.getElementById("stat-percent")!.textContent = `-`; // procenty w survivalu mniej ważne
+			percent = 100; // Fake percent for message logic
+		} else {
+			document.getElementById("final-score")!.textContent = `${score}/30`;
+			percent = Math.round((score / 30) * 100);
+			document.getElementById("stat-percent")!.textContent =
+				`${percent}%`;
+		}
+		document.getElementById("stat-time")!.textContent = `${timeSeconds}s`;
+		document.getElementById("stat-best")!.textContent =
+			stats?.bestScore.toString() || "0";
+		document.getElementById("stat-games")!.textContent =
+			stats?.gamesPlayed.toString() || "0";
+
+		// Wiadomość w zależności od wyniku
+		let message = "";
+
+		if (currentDifficulty === "survival") {
+			if (score >= 50) message = "🏆 Jesteś Legendą!";
+			else if (score >= 20) message = "👏 Niesamowity wynik!";
+			else if (score >= 10) message = "👍 Dobra robota!";
+			else message = "💪 Walcz dalej!";
+		} else {
+			if (percent >= 90)
+				message = "🏆 Niesamowite! Jesteś mistrzem flag!";
+			else if (percent >= 70) message = "👏 Świetny wynik! Tak trzymaj!";
+			else if (percent >= 50) message = "👍 Dobry początek! Ćwicz dalej!";
+			else message = "💪 Nie poddawaj się! Spróbuj jeszcze raz!";
+		}
+		document.getElementById("score-message")!.textContent = message;
+
+		showScreen("summary");
+	}
+
+	// Pokaż statystyki
+	function showStats() {
+		playerName = playerNameInput.value.trim() || "Gracz";
+		const stats = getPlayerStats(playerName);
+
+		if (stats) {
+			document.getElementById("total-games")!.textContent =
+				stats.gamesPlayed.toString();
+			document.getElementById("total-best")!.textContent =
+				stats.bestScore.toString();
+			document.getElementById("total-correct")!.textContent =
+				stats.totalCorrect.toString();
+
+			const accuracy =
+				stats.totalQuestions > 0
+					? Math.round(
+							(stats.totalCorrect / stats.totalQuestions) * 100,
+						)
+					: 0;
+			document.getElementById("total-accuracy")!.textContent =
+				`${accuracy}%`;
+
+			// Pokaż historię gier
+			const statsList = document.getElementById("stats-list")!;
+			if (stats.history.length > 0) {
+				statsList.innerHTML = stats.history
+					.slice(0, 10)
+					.map((game) => {
+						const date = new Date(game.date);
+						const dateStr = date.toLocaleDateString("pl-PL", {
+							day: "numeric",
+							month: "short",
+						});
+						const difficultyNames: Record<string, string> = {
+							easy: "🟢 Łatwy",
+							medium: "🟡 Średni",
+							hard: "🔴 Trudny",
+						};
+						return `
+						<div class="stats-item">
+							<div class="stats-item-info">
+								<span class="stats-item-date">${dateStr}</span>
+								<span class="stats-item-difficulty">${difficultyNames[game.difficulty] || game.difficulty}</span>
+							</div>
+							<span class="stats-item-score">${game.score}/${game.total}</span>
+						</div>
+					`;
+					})
+					.join("");
+			} else {
+				statsList.innerHTML =
+					'<div class="stats-empty">Brak historii gier</div>';
+			}
+		} else {
+			document.getElementById("total-games")!.textContent = "0";
+			document.getElementById("total-best")!.textContent = "0";
+			document.getElementById("total-correct")!.textContent = "0";
+			document.getElementById("total-accuracy")!.textContent = "0%";
+			document.getElementById("stats-list")!.innerHTML =
+				'<div class="stats-empty">Zagraj swoją pierwszą grę!</div>';
+		}
+
+		showScreen("stats");
+	}
+
+	// Przełącz ekrany
+	function showScreen(
+		screen: "start" | "quiz" | "summary" | "stats" | "global-stats",
+	) {
+		startScreen.style.display = screen === "start" ? "flex" : "none";
+		quizScreen.style.display = screen === "quiz" ? "flex" : "none";
+		summaryScreen.style.display = screen === "summary" ? "flex" : "none";
+		statsScreen.style.display = screen === "stats" ? "flex" : "none";
+		globalStatsScreen.style.display =
+			screen === "global-stats" ? "flex" : "none";
+		if (screen === "start") updateGameCounters();
+	}
+
+	// Event listenery
+	playAgainBtn.addEventListener("click", () => startQuiz());
+	changeDifficultyBtn.addEventListener("click", () => showScreen("start"));
+	showStatsBtn.addEventListener("click", () => showStats());
+	showGlobalStatsBtn.addEventListener("click", () => {
+		showScreen("global-stats");
+		fetchGlobalStats();
+	});
+	closeStatsBtn.addEventListener("click", () => showScreen("start"));
+	closeGlobalStatsBtn.addEventListener("click", () => showScreen("start"));
+	backToMenuBtn.addEventListener("click", () => showScreen("start"));
+	backToMenuGlobalBtn.addEventListener("click", () => showScreen("start"));
+	quitQuizBtn.addEventListener("click", () => showScreen("start"));
+</script>
